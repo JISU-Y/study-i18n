@@ -1,14 +1,19 @@
 import { GetStaticPropsContext, InferGetStaticPropsType } from "next"
 import Head from "next/head"
+import { useRouter } from "next/router"
 import { useTranslation } from "next-i18next"
 import { serverSideTranslations } from "next-i18next/serverSideTranslations"
 
 export default function Home(_props: InferGetStaticPropsType<typeof getStaticProps>) {
+  const router = useRouter()
   const { t } = useTranslation("home")
 
-  console.log(t("h1"))
-  console.log(t("name"))
-  console.log(t("description"))
+  const handleLangToggle = (newLocale: string) => {
+    const { pathname, asPath, query } = router
+    router.push({ pathname, query }, asPath, { locale: newLocale })
+  }
+
+  const changeTo = router.locale === "ko" ? "en" : "ko"
 
   return (
     <>
@@ -19,15 +24,15 @@ export default function Home(_props: InferGetStaticPropsType<typeof getStaticPro
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <div>my first next app</div>
+        <button onClick={() => handleLangToggle(changeTo)}>change lang</button>
+        <div>{t("country", { changeTo })}</div>
+        <div>{t("welcome", { changeTo })}</div>
       </main>
     </>
   )
 }
 
 export const getStaticProps = async ({ locale }: GetStaticPropsContext) => {
-  console.log(locale)
-
   return {
     props: {
       ...(await serverSideTranslations(locale || "ko", ["common", "home"])), //  === "ko" ? "en" : "ko"
